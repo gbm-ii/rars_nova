@@ -13,22 +13,29 @@ import rars.riscv.lang.lexing.RVTokenType;
 import rars.util.RefCell;
 
 import javax.swing.text.BadLocationException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static rars.venus.editors.rsyntaxtextarea.RSTAUtils.tokenValue;
 
 final class RVFoldParser implements FoldParser {
-    private static boolean canBeAChildInList(
-        final @NotNull List<@NotNull FoldData> folds,
-        final @NotNull FoldData element
+    private static final @NotNull String
+        REGION_START = "region",
+        REGION_END = "endregion";
+
+    private static boolean isNotWithinAnyFold(
+        final @NotNull FoldData element,
+        final @NotNull List<@NotNull FoldData> folds
     ) {
         return folds
             .stream()
             .noneMatch(fold -> fold.startLine() >= element.startLine() && fold.endLine() <= element.endLine());
     }
 
-    private static @NotNull List<@NotNull Fold> hierarchize(final @NotNull List<@NotNull Fold> folds) {
+    private static @NotNull @Unmodifiable List<@NotNull Fold> hierarchize(final @NotNull List<@NotNull Fold> folds) {
         final var foldsData = folds
             .stream()
             .map(FoldData::new)
@@ -40,7 +47,7 @@ final class RVFoldParser implements FoldParser {
         final var hierarchized = new ArrayList<FoldData>();
 
         for (final var fold : sortedBySize) {
-            if (canBeAChildInList(hierarchized, fold)) {
+            if (isNotWithinAnyFold(fold, hierarchized)) {
                 hierarchized.add(fold);
             } else {
                 // instead of going top-down, we go bottom-up
@@ -64,34 +71,47 @@ final class RVFoldParser implements FoldParser {
         return generateFoldsFromData(hierarchized);
     }
 
-    private static @NotNull List<Fold> generateFoldsFromData(final @NotNull List<FoldData> data) {
+    /**
+     * Given a list of {@link FoldData} objects that represent non-intersecting fold hierarchies, return a list of
+     * {@link Fold}s for each hierarchy.
+     */
+    private static @NotNull @Unmodifiable List<Fold> generateFoldsFromData(final @NotNull List<FoldData> data) {
         return data.stream()
             .sorted(Comparator.comparingInt(FoldData::startLine))
             .map(foldData -> createFoldFromFoldDataRec(foldData.baseFold(), foldData.children()))
             .toList();
     }
 
+    /**
+     * Given a root {@link Fold} in a hierarchy and a list of data of children folds, recursively creates
+     * a fold tree. This method assumes that the input passed to it can create a valid hierarchy.
+     */
     private static @NotNull Fold createFoldFromFoldDataRec(
         final @NotNull Fold baseFold,
         final @NotNull List<FoldData> children
     ) {
-        children.stream().sorted(
-            Comparator.comparingInt(FoldData::startLine)
-        ).forEach(childData -> {
-            try {
-                final var childFold = baseFold.createChild(
-                    childData.baseFold().getFoldType(),
-                    childData.startOffset()
-                );
-                childFold.setEndOffset(childData.endOffset());
-                createFoldFromFoldDataRec(childFold, childData.children());
-            } catch (final BadLocationException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        children
+            .stream()
+            .sorted(Comparator.comparingInt(FoldData::startLine))
+            .forEach(childData -> {
+                try {
+                    final var childFold = baseFold.createChild(
+                        childData.baseFold().getFoldType(),
+                        childData.startOffset()
+                    );
+                    childFold.setEndOffset(childData.endOffset());
+                    createFoldFromFoldDataRec(childFold, childData.children());
+                } catch (final BadLocationException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         return baseFold;
     }
 
+    /**
+     * Returns true if the two given folds intersect. This does <b>not</b> include a situation, where one fold
+     * fully contains another - in such a case, the result is false.
+     */
     private static boolean doFoldsIntersect(final @NotNull Fold first, final @NotNull Fold other) {
         final var isFirstStartInOtherFold =
             other.getStartLine() <= first.getStartLine() && first.getStartLine() <= other.getEndLine();
@@ -100,13 +120,19 @@ final class RVFoldParser implements FoldParser {
         return isFirstStartInOtherFold != isFirstEndInOtherFold;
     }
 
+    /**
+     * Aggregates input lists of folds into a single list, where the resulting folds all start on separate lines (lines
+     * with distinct indices). To achieve this, whenever there are multiple folds in the input lists such that each one
+     * starts on the same line, the longest fold (one ending on the line with the highest index) is selected.
+     */
     @SafeVarargs
-    private static @NotNull List<@NotNull Fold> join(final List<@NotNull Fold> @NotNull ... lists) {
+    private static @NotNull @Unmodifiable List<@NotNull Fold> join(final List<@NotNull Fold> @NotNull ... lists) {
         final var foldMap = new HashMap<Integer, Fold>();
         for (final var list : lists) {
             for (final var fold : list) {
                 foldMap.merge(
-                    fold.getStartLine(), fold,
+                    fold.getStartLine(),
+                    fold,
                     (existing, replacement) ->
                         replacement.getEndLine() > existing.getEndLine()
                             ? replacement
@@ -117,28 +143,35 @@ final class RVFoldParser implements FoldParser {
         return foldMap.values().stream().toList();
     }
 
+    /**
+     * Merges folds that result from {@code #region}/{@code #endregion} comments with other folds.
+     * <br>
+     * Whenever a region fold intersects with a fold that isn't a comment fold (doesn't result from multiple consecutive
+     * comments), it is ignored. If it intersects only comment folds, each comment fold is discarded in favour of the
+     * region fold. In case of no intersections, the region is added and no other changes are made.
+     */
     private static @NotNull List<@NotNull Fold> mergeWithRegions(
         final @NotNull List<Fold> folds,
         final @NotNull List<Fold> regions
     ) {
-        final var result = new ArrayList<>(folds);
+        final var remainingFolds = new ArrayList<>(folds);
         for (final var region : regions) {
-            final var intersectingRegions = result
+            final var intersectingFolds = remainingFolds
                 .stream()
                 .filter(fold ->
                     doFoldsIntersect(fold, region)
                 )
                 .toList();
-            if (intersectingRegions.stream().allMatch(fold ->
-                fold.getFoldType() == RVFoldType.COMMENT)
+            if (intersectingFolds.stream()
+                .allMatch(fold -> fold.getFoldType() == RVFoldType.COMMENT)
             ) {
                 // the remaining conflicting folds are all comments and, thus, have lower priority
                 // we can safely remove them
-                result.removeAll(intersectingRegions);
-                result.add(region);
+                remainingFolds.removeAll(intersectingFolds);
+                remainingFolds.add(region);
             }
         }
-        return result;
+        return remainingFolds;
     }
 
     // region getFolds methods
@@ -240,11 +273,11 @@ final class RVFoldParser implements FoldParser {
                             // strip the leading '#' and any whitespaces after it
                             final var commentTextStripped = comment.substring(1).strip().toLowerCase();
                             // check if the comment begins with the `region` keyword
-                            if (commentTextStripped.startsWith("region")) {
+                            if (commentTextStripped.startsWith(REGION_START)) {
                                 final var regionFold = new Fold(RVFoldType.REGION, textArea, tokens.getOffset());
                                 regionStack.add(regionFold);
                                 folds.add(regionFold);
-                            } else if (commentTextStripped.startsWith("endregion")) {
+                            } else if (commentTextStripped.startsWith(REGION_END)) {
                                 if (!regionStack.isEmpty()) {
                                     final var regionFold = regionStack.removeLast();
                                     regionFold.setEndOffset(tokens.getOffset());
@@ -359,7 +392,7 @@ final class RVFoldParser implements FoldParser {
     }
 
     @Override
-    public @NotNull List<Fold> getFolds(final @NotNull RSyntaxTextArea rSyntaxTextArea) {
+    public @NotNull @Unmodifiable List<Fold> getFolds(final @NotNull RSyntaxTextArea rSyntaxTextArea) {
         final var labelsFolds = getFoldsForLabels(rSyntaxTextArea);
         final var commentFolds = getCommentFolds(rSyntaxTextArea);
 //        final var instructionBlocksFolds = getFoldsForInstructionBlocks(rSyntaxTextArea);

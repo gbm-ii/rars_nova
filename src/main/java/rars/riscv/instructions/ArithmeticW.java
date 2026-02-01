@@ -26,8 +26,10 @@ public abstract class ArithmeticW extends BasicInstruction {
     }
 
     @Override
-    public void simulate(@NotNull final ProgramStatement statement, @NotNull final SimulationContext context) throws
-        SimulationException {
+    public void simulate(
+        @NotNull final ProgramStatement statement,
+        @NotNull final SimulationContext context
+    ) throws SimulationException {
         final long newValue = base.computeW(
             ConversionUtils.longLowerHalfToInt(context.registerFile().getLongValue(statement.getOperand(1))),
             ConversionUtils.longLowerHalfToInt(context.registerFile().getLongValue(statement.getOperand(2)))

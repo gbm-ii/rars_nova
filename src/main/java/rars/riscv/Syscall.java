@@ -31,9 +31,9 @@ public enum Syscall implements SimulationCallback {
         50,
         "Service to display a message to user",
         "a0 = address of null-terminated string that is the message to user",
-        "a0 = Yes (0), No (1), or Cancel(2)",
+        "a0 = Yes (0), No (1), or Cancel (2)",
         (stmt, ctxt) -> {
-            final var message = NullString.get(stmt);
+            final var message = NullString.get(stmt, ctxt);
             int result = JOptionPane.showConfirmDialog(null, message);
             if (result == JOptionPane.CLOSED_OPTION) {
                 result = JOptionPane.CANCEL_OPTION;
@@ -140,7 +140,7 @@ public enum Syscall implements SimulationCallback {
             final var registerFile = ctxt.registerFile();
             final var fpRegisterFile = ctxt.fpRegisterFile();
 
-            final var prompt = NullString.get(stmt, "tp");
+            final var prompt = NullString.get(stmt, ctxt, "tp");
 
             final var inputValue = JOptionPane.showInputDialog(prompt);
 
@@ -169,7 +169,7 @@ public enum Syscall implements SimulationCallback {
     InputDialogFloat(
         "InputDialogFloat", 52, "TODO", "TODO", "TODO", (stmt, ctxt) -> {
 
-        final var prompt = NullString.get(stmt);
+        final var prompt = NullString.get(stmt, ctxt);
 
         final var input = JOptionPane.showInputDialog(prompt);
 
@@ -209,7 +209,7 @@ public enum Syscall implements SimulationCallback {
               - 2 - Cancel was chosen.
               - 3 - OK was chosen but no data had been input into field.""",
         (stmt, ctxt) -> {
-            final var prompt = NullString.get(stmt);
+            final var prompt = NullString.get(stmt, ctxt);
             final var inputValue = JOptionPane.showInputDialog(prompt);
             int exitCode = 0, result = 0;
             if (inputValue == null) {
@@ -244,7 +244,7 @@ public enum Syscall implements SimulationCallback {
         -3: OK was chosen but no data had been input into field. No change to buffer.
         -4: length of the input string exceeded the specified maximum. Buffer contains the maximum allowable input string terminated with null.""",
         (stmt, ctxt) -> {
-            final var prompt = NullString.get(stmt);
+            final var prompt = NullString.get(stmt, ctxt);
 
             final var registerFile = ctxt.registerFile();
             final var memory = ctxt.memory();
@@ -331,7 +331,7 @@ public enum Syscall implements SimulationCallback {
         }
         JOptionPane.showMessageDialog(
             null,
-            NullString.get(stmt),
+            NullString.get(stmt, ctxt),
             null,
             msgType
         );
@@ -379,7 +379,7 @@ public enum Syscall implements SimulationCallback {
             a0 = address of null-terminated string that is the message to user
             fa1 = the float to display""",
         "N/A", (stmt, ctxt) -> {
-        final String message = NullString.get(stmt);
+        final String message = NullString.get(stmt, ctxt);
 
         // Display the dialog.
         JOptionPane.showMessageDialog(
@@ -396,7 +396,7 @@ public enum Syscall implements SimulationCallback {
             a0 = address of null-terminated string that is the message to user
             a1 = the int to display""",
         "N/A", (stmt, ctxt) -> {
-        final String message = NullString.get(stmt);
+        final String message = NullString.get(stmt, ctxt);
 
         // Display the dialog.
         JOptionPane.showMessageDialog(
@@ -414,7 +414,7 @@ public enum Syscall implements SimulationCallback {
             a1 = address of the second string to display""",
         "N/A", (stmt, ctxt) -> JOptionPane.showMessageDialog(
         null,
-        NullString.get(stmt) + NullString.get(stmt, "a1"),
+        NullString.get(stmt, ctxt) + NullString.get(stmt, ctxt, "a1"),
         null,
         JOptionPane.INFORMATION_MESSAGE
     )
@@ -496,7 +496,7 @@ public enum Syscall implements SimulationCallback {
         "a0 = the file decriptor or -1 if an error occurred", (stmt, ctxt) -> {
 
         final int retValue = ctxt.io().openFile(
-            NullString.get(stmt),
+            NullString.get(stmt, ctxt),
             ctxt.registerFile().getIntValue("a1")
         );
         // set returned fd value in register
@@ -563,7 +563,10 @@ public enum Syscall implements SimulationCallback {
     ),
     PrintString(
         "PrintString", 4, "Prints a null-terminated string to the console",
-        "a0 = the address of the string", "N/A", (stmt, ctxt) -> ctxt.io().printString(NullString.get(stmt))
+        "a0 = the address of the string", "N/A",
+        (stmt, ctxt) -> ctxt.io().printString(
+            NullString.get(stmt, ctxt)
+        )
     ),
     RandDouble(
         "RandDouble", 44, "Get a random double from the range 0.0-1.0",
@@ -573,7 +576,9 @@ public enum Syscall implements SimulationCallback {
                 ctxt.registerFile().getIntValue("a0")
             );
             try {
-                ctxt.fpRegisterFile().updateRegisterByName("fa0", Double.doubleToRawLongBits(stream.nextDouble())
+                ctxt.fpRegisterFile().updateRegisterByName(
+                    "fa0",
+                    Double.doubleToRawLongBits(stream.nextDouble())
                 );
             } catch (rars.exceptions.SimulationException e) {
                 throw new RuntimeException(e);
@@ -616,7 +621,10 @@ public enum Syscall implements SimulationCallback {
             ctxt.registerFile().getIntValue("a0")
         );
         try {
-            ctxt.registerFile().updateRegisterByName("a0", stream.nextInt(ctxt.registerFile().getIntValue("a1")));
+            ctxt.registerFile().updateRegisterByName(
+                "a0",
+                stream.nextInt(ctxt.registerFile().getIntValue("a1"))
+            );
         } catch (final IllegalArgumentException iae) {
             throw new ExitingException(
                 stmt,

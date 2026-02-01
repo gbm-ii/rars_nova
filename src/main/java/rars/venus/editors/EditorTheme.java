@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import rars.riscv.lang.lexing.RVTokenType;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,9 +24,9 @@ public final class EditorTheme {
         final @NotNull Color selectionColor
     ) {
         this.tokenStyles = new HashMap<>(tokenStyles);
-        Arrays.stream(RVTokenType.values())
-            .forEach(tokenType ->
-                this.tokenStyles.putIfAbsent(tokenType, TokenStyle.DEFAULT));
+        for (final var tokenType : RVTokenType.values()) {
+            this.tokenStyles.putIfAbsent(tokenType, TokenStyle.DEFAULT);
+        }
         this.backgroundColor = backgroundColor;
         this.foregroundColor = foregroundColor;
         this.lineHighlightColor = lineHighlightColor;

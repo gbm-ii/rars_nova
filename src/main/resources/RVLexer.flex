@@ -1,5 +1,6 @@
 package rars.riscv.lang.lexing;
 
+import org.jetbrains.annotations.NotNull;
 import rars.Globals;
 import rars.riscv.InstructionsRegistry;
 import javax.swing.text.Segment;
@@ -21,137 +22,147 @@ import java.io.Reader;
 
 %{
     private Segment s;
-            private int offsetShift;
-            private P builder;
+    private int offsetShift;
+    private P builder;
+
+    public RVLexer() {
+        super();
+    }
+
+    /**
+     * Adds the token specified to the current linked list of tokens.
+     *
+     * @param tokenType The token's type.
+     */
+    private void addToken(final @NotNull RVTokenType tokenType) {
+        addToken(zzStartRead, zzMarkedPos-1, tokenType);
+    }
+
+
+    /**
+     * Adds the token specified to the current linked list of tokens.
+     *
+     * @param tokenType The token's type.
+     */
+    private void addToken(final int start, final int end, final @NotNull RVTokenType tokenType) {
+        addToken(zzBuffer, start, end, tokenType, getOffset(start));
+    }
+
+    /**
+     * Adds the token specified to the current linked list of tokens.
+     *
+     * @param array The character array.
+     * @param start The starting offset in the array.
+     * @param end The ending offset in the array.
+     * @param tokenType The token's type.
+     * @param startOffset The offset in the document at which this token
+     *                    occurs.
+     */
+    private void addToken(
+        final char[] array,
+        final int start,
+        final int end,
+        final @NotNull RVTokenType tokenType,
+        final int startOffset
+    ) {
+        builder.addToken(array, start, end, tokenType, startOffset);
+        zzStartRead = zzMarkedPos;
+    }
+    
+    private void addNullToken() {
+        this.builder.addNullToken(zzBuffer, zzStartRead, getOffset(zzStartRead));
+    }
+    
+    private void addErrorToken(String notice) {
+        this.builder.addErrorToken(zzBuffer, zzStartRead, getOffset(zzStartRead), notice);
+        /*
         
-            public RVLexer() {
-                super();
-            }
+        this.addToken(array, offset, offset, RVTokenType.ERROR, lineOffset);
+        this.addToken(zzBuffer, zzStartRead, zzStartRead, RVTokenType.ERROR, getOffset(zzStartRead));
         
-            /**
-             * Adds the token specified to the current linked list of tokens.
-             *
-             * @param tokenType The token's type.
-             */
-            private void addToken(final RVTokenType tokenType) {
-                addToken(zzStartRead, zzMarkedPos-1, tokenType);
-            }
-        
-        
-            /**
-             * Adds the token specified to the current linked list of tokens.
-             *
-             * @param tokenType The token's type.
-             */
-            private void addToken(final int start, final int end, final RVTokenType tokenType) {
-                addToken(zzBuffer, start, end, tokenType, getOffset(start));
-            }
-        
-            /**
-             * Adds the token specified to the current linked list of tokens.
-             *
-             * @param array The character array.
-             * @param start The starting offset in the array.
-             * @param end The ending offset in the array.
-             * @param tokenType The token's type.
-             * @param startOffset The offset in the document at which this token
-             *                    occurs.
-             */
-            private void addToken(final char[] array, final int start, final int end, final RVTokenType tokenType, final int startOffset) {
-                builder.addToken(array, start, end, tokenType, startOffset);
-                zzStartRead = zzMarkedPos;
-            }
-            
-            private void addNullToken() {
-                this.builder.addNullToken(zzBuffer, zzStartRead, getOffset(zzStartRead));
-            }
-            
-            private void addErrorToken(String notice) {
-                this.builder.addErrorToken(zzBuffer, zzStartRead, getOffset(zzStartRead), notice);
-            }
-            
-            private int getOffset(int start) {
-                return start + offsetShift;
-            }
-            
-            
-            private T getResult() {
-                return this.builder.getResult();
-            }
-        
-            /**
-             * Returns the first token in the linked list of tokens generated
-             * from <code>text</code>.  This method must be implemented by
-             * subclasses so they can correctly implement syntax highlighting.
-             *
-             * @param text The text from which to get tokens.
-             * @param initialTokenType The token type we should start with.
-             * @param lineOffset The offset into the document at which
-             *                    <code>text</code> starts.
-             * @return The first <code>Token</code> in a linked list representing
-             *         the syntax highlighted text.
-             */
-            @Override
-            public T getTokensList(Segment text, int initialTokenType, int lineOffset, P builder) {
-        
-                this.builder = builder;
-                this.offsetShift = -text.offset + lineOffset;
-        
-                // Start off in the proper state.
-        
-                s = text;
-                try {
-                    yyreset(zzReader);
-                    yybegin(YYINITIAL);
-                    return yylex();
-                } catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
-        
-            }
-        
-        
-            /**
-             * Refills the input buffer.
-             *
-             * @return      <code>true</code> if EOF was reached, otherwise
-             *              <code>false</code>.
-             */
-            private boolean zzRefill() {
-                return zzCurrentPos>=s.offset+s.count;
-            }
-        
-        
-            /**
-             * Resets the scanner to read from a new input stream.
-             * Does not close the old reader.
-             * <br>
-             * All internal variables are reset, the old input stream 
-             * <b>cannot</b> be reused (internal buffer is discarded and lost).
-             * Lexical state is set to {@link YY_INITIAL}.
-             *
-             * @param reader   the new input stream 
-             */
-            public void yyreset(Reader reader) {
-                // 's' has been updated.
-                zzBuffer = s.array;
-                /*
-                 * We replaced the line below with the two below it because zzRefill
-                 * no longer "refills" the buffer (since the way we do it, it's always
-                 * "full" the first time through, since it points to the segment's
-                 * array).  So, we assign zzEndRead here.
-                 */
-                //zzStartRead = zzEndRead = s.offset;
-                zzStartRead = s.offset;
-                zzEndRead = zzStartRead + s.count;
-                zzCurrentPos = zzMarkedPos = s.offset;
-                zzLexicalState = YYINITIAL;
-                zzReader = reader;
-                zzAtBOL  = true;
-                zzAtEOF  = false;
-            }
-            
-            
+         */
+    }
+    
+    private int getOffset(int start) {
+        return start + offsetShift;
+    }
+    
+    
+    private T getResult() {
+        return this.builder.getResult();
+    }
+
+    /**
+     * Returns the first token in the linked list of tokens generated
+     * from <code>text</code>.  This method must be implemented by
+     * subclasses so they can correctly implement syntax highlighting.
+     *
+     * @param text The text from which to get tokens.
+     * @param initialTokenType The token type we should start with.
+     * @param lineOffset The offset into the document at which
+     *                    <code>text</code> starts.
+     * @return The first <code>Token</code> in a linked list representing
+     *         the syntax highlighted text.
+     */
+    @Override
+    public T getTokensList(Segment text, int initialTokenType, int lineOffset, P builder) {
+
+        this.builder = builder;
+        this.offsetShift = -text.offset + lineOffset;
+
+        // Start off in the proper state.
+
+        s = text;
+        try {
+            yyreset(zzReader);
+            yybegin(YYINITIAL);
+            return yylex();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+
+    }
+
+
+    /**
+     * Refills the input buffer.
+     *
+     * @return      <code>true</code> if EOF was reached, otherwise
+     *              <code>false</code>.
+     */
+    private boolean zzRefill() {
+        return zzCurrentPos>=s.offset+s.count;
+    }
+
+
+    /**
+     * Resets the scanner to read from a new input stream.
+     * Does not close the old reader.
+     * <br>
+     * All internal variables are reset, the old input stream 
+     * <b>cannot</b> be reused (internal buffer is discarded and lost).
+     * Lexical state is set to {@link YY_INITIAL}.
+     *
+     * @param reader   the new input stream 
+     */
+    public void yyreset(Reader reader) {
+        // 's' has been updated.
+        zzBuffer = s.array;
+        /*
+         * We replaced the line below with the two below it because zzRefill
+         * no longer "refills" the buffer (since the way we do it, it's always
+         * "full" the first time through, since it points to the segment's
+         * array).  So, we assign zzEndRead here.
+         */
+        //zzStartRead = zzEndRead = s.offset;
+        zzStartRead = s.offset;
+        zzEndRead = zzStartRead + s.count;
+        zzCurrentPos = zzMarkedPos = s.offset;
+        zzLexicalState = YYINITIAL;
+        zzReader = reader;
+        zzAtBOL  = true;
+        zzAtEOF  = false;
+    }
 %}
 
 Letter                   = ([a-zA-Z])
@@ -226,20 +237,20 @@ RightParen = (")")
     {Comma}                     { addToken(RVTokenType.COMMA); }
     {Directive}					{ addToken(RVTokenType.DIRECTIVE); }
     {Identifier}                {
-                                                                final var foundOps = InstructionsRegistry.matchOperator(yytext());
-                                                                if (foundOps.isEmpty()) {
-                                                                    final var foundRegister = Globals.REGISTER_FILE.getRegisterByName(yytext());
-                                                                    final var foundFPRegister = Globals.FP_REGISTER_FILE.getRegisterByName(yytext());
-                                                                    final var foundCASRegister = Globals.CS_REGISTER_FILE.getRegisterByName(yytext());
-                                                                    if (foundRegister != null || foundFPRegister != null || foundCASRegister != null) {
-                                                                        addToken(RVTokenType.REGISTER_NAME);
-                                                                    } else {
-                                                                        addToken(RVTokenType.IDENTIFIER);
-                                                                    }
-                                                                } else {
-                                                                    addToken(RVTokenType.INSTRUCTION);
-                                                                }
-                                                            }
+    final var foundOps = InstructionsRegistry.matchOperator(yytext());
+    if (foundOps.isEmpty()) {
+        final var foundRegister = Globals.REGISTER_FILE.getRegisterByName(yytext());
+        final var foundFPRegister = Globals.FP_REGISTER_FILE.getRegisterByName(yytext());
+        final var foundCASRegister = Globals.CS_REGISTER_FILE.getRegisterByName(yytext());
+        if (foundRegister != null || foundFPRegister != null || foundCASRegister != null) {
+            addToken(RVTokenType.REGISTER_NAME);
+        } else {
+            addToken(RVTokenType.IDENTIFIER);
+        }
+    } else {
+        addToken(RVTokenType.INSTRUCTION);
+    }
+}
 
     {LeftParen}                 { addToken(RVTokenType.LEFT_PAREN); }
     {RightParen}                { addToken(RVTokenType.RIGHT_PAREN); }
@@ -254,6 +265,6 @@ RightParen = (")")
 	<<EOF>>						{ addNullToken(); return getResult(); }
 
 	/* Catch any other (unhandled) characters. */
-	.							{ addToken(RVTokenType.ERROR); }
+	.							{ addErrorToken("Invalid token."); }
 
 }

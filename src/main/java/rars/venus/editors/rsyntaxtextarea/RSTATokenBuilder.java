@@ -28,10 +28,10 @@ public final class RSTATokenBuilder extends TokenMakerBase implements TokenBuild
 
     @Override
     public void addToken(
-        final char[] array, final int start, final int end, @NotNull final RVTokenType tokenType,
-        final int startOffset
+        final char[] tokenizedChars, final int startOffset, final int endOffset, @NotNull final RVTokenType tokenType,
+        final int lineOffset
     ) {
-        this.addToken(array, start, end, tokenValue(tokenType), startOffset);
+        this.addToken(tokenizedChars, startOffset, endOffset, tokenValue(tokenType), lineOffset);
     }
 
     @Override

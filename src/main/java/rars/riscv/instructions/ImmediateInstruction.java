@@ -64,8 +64,10 @@ public abstract class ImmediateInstruction extends BasicInstruction {
     }
 
     @Override
-    public void simulate(final @NotNull ProgramStatement statement, @NotNull final SimulationContext context) throws
-        SimulationException {
+    public void simulate(
+        final @NotNull ProgramStatement statement,
+        @NotNull final SimulationContext context
+    ) throws SimulationException {
         final var upperImmediate = (statement.getOperand(2) << 20) >> 20;
         final long newValue = (InstructionsRegistry.RV64_MODE_FLAG)
             ? compute(

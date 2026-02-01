@@ -33,8 +33,10 @@ public final class HighlightingSettings {
     public final @NotNull ListenerDispatcher<Void>.Hook onChangeListenerHook;
     private final @NotNull ListenerDispatcher<Void> onChangeDispatcher;
     private final @NotNull Preferences preferences;
-    private @NotNull TokenStyle textSegmentHighlightingStyle;
-    private @Nullable TokenStyle dataSegmentHighlightingStyle, registerHighlightingStyle;
+    private @NotNull TokenStyle
+        textSegmentHighlightingStyle,
+        dataSegmentHighlightingStyle,
+        registerHighlightingStyle;
 
     public HighlightingSettings(final @NotNull Preferences preferences) {
         this.onChangeDispatcher = new ListenerDispatcher<>();
@@ -70,23 +72,41 @@ public final class HighlightingSettings {
     }
 
     // endregion Preferences prefix methods
-    
+
     public @NotNull TokenStyle getTextSegmentHighlightingStyle() {
         return textSegmentHighlightingStyle;
     }
 
-    public @Nullable TokenStyle getRegisterHighlightingStyle() {
+    public void setTextSegmentHighlightingStyle(final @NotNull TokenStyle textSegmentHighlightingStyle) {
+        if (!this.textSegmentHighlightingStyle.equals(textSegmentHighlightingStyle)) {
+            this.textSegmentHighlightingStyle = textSegmentHighlightingStyle;
+        }
+    }
+
+    public @NotNull TokenStyle getRegisterHighlightingStyle() {
         return registerHighlightingStyle;
     }
 
-    public @Nullable TokenStyle getDataSegmentHighlightingStyle() {
+    public void setRegisterHighlightingStyle(final @NotNull TokenStyle registerHighlightingStyle) {
+        if (!this.registerHighlightingStyle.equals(registerHighlightingStyle)) {
+            this.registerHighlightingStyle = registerHighlightingStyle;
+        }
+    }
+
+    public @NotNull TokenStyle getDataSegmentHighlightingStyle() {
         return dataSegmentHighlightingStyle;
     }
 
-    public void saveSettings() {
+    public void setDataSegmentHighlightingStyle(final @NotNull TokenStyle dataSegmentHighlightingStyle) {
+        if (!this.dataSegmentHighlightingStyle.equals(dataSegmentHighlightingStyle)) {
+            this.dataSegmentHighlightingStyle = dataSegmentHighlightingStyle;
+        }
+    }
+
+    public void applySettings() {
         writeTokenStyleToPreferences(HighlightingType.TEXT_SEGMENT, this.textSegmentHighlightingStyle);
-        writeNullableTokenStyleToPreferences(HighlightingType.DATA_SEGMENT, this.dataSegmentHighlightingStyle);
-        writeNullableTokenStyleToPreferences(HighlightingType.REGISTER, this.registerHighlightingStyle);
+        writeTokenStyleToPreferences(HighlightingType.DATA_SEGMENT, this.dataSegmentHighlightingStyle);
+        writeTokenStyleToPreferences(HighlightingType.REGISTER, this.registerHighlightingStyle);
         try {
             this.preferences.flush();
         } catch (final SecurityException se) {
@@ -98,18 +118,6 @@ public final class HighlightingSettings {
     }
 
     // region Preference writing methods
-
-    private void writeNullableTokenStyleToPreferences(
-        final @NotNull HighlightingType type,
-        final @Nullable TokenStyle style
-    ) {
-        if (style == null) {
-            this.preferences.putBoolean(enabledPrefix(type), false);
-        } else {
-            this.preferences.putBoolean(enabledPrefix(type), true);
-            writeTokenStyleToPreferences(type, style);
-        }
-    }
 
     private void writeTokenStyleToPreferences(final @NotNull HighlightingType type, final @NotNull TokenStyle style) {
         putNullableColor(foregroundPrefix(type), style.foreground());
@@ -142,25 +150,14 @@ public final class HighlightingSettings {
             HighlightingType.TEXT_SEGMENT,
             HighlightingDefaults.DEFAULT_TEXT_SEGMENT_STYLE
         );
-        this.dataSegmentHighlightingStyle = loadNullableTokenStyleFromPreferences(
+        this.dataSegmentHighlightingStyle = loadTokenStyleFromPreferences(
             HighlightingType.DATA_SEGMENT,
             HighlightingDefaults.DEFAULT_DATA_SEGMENT_STYLE
         );
-        this.registerHighlightingStyle = loadNullableTokenStyleFromPreferences(
+        this.registerHighlightingStyle = loadTokenStyleFromPreferences(
             HighlightingType.REGISTER,
             HighlightingDefaults.DEFAULT_REGISTER_STYLE
         );
-    }
-
-    private @Nullable TokenStyle loadNullableTokenStyleFromPreferences(
-        final @NotNull HighlightingType type,
-        final @NotNull TokenStyle defaultStyle
-    ) {
-        final var enabled = this.preferences.getBoolean(enabledPrefix(type), true);
-        if (!enabled) {
-            return null;
-        }
-        return loadTokenStyleFromPreferences(type, defaultStyle);
     }
 
     private @NotNull TokenStyle loadTokenStyleFromPreferences(
@@ -198,8 +195,7 @@ public final class HighlightingSettings {
     private enum HighlightingType {
         TEXT_SEGMENT("Text"),
         DATA_SEGMENT("Data"),
-        REGISTER("Register"),
-        DELAY_SLOT("Delay");
+        REGISTER("Register");
 
         public final @NotNull String name;
 

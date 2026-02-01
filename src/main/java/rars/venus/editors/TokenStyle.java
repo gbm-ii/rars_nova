@@ -12,10 +12,10 @@ public record TokenStyle(
     boolean isItalic,
     boolean isUnderline
 ) implements Cloneable {
-    public static final Color DEFAULT_FOREGROUND = null;
-    public static final Color DEFAULT_BACKGROUND = null;
+    public static final @Nullable Color DEFAULT_FOREGROUND = null;
+    public static final @Nullable Color DEFAULT_BACKGROUND = null;
 
-    public static final TokenStyle DEFAULT = new TokenStyle(
+    public static final @NotNull TokenStyle DEFAULT = new TokenStyle(
         DEFAULT_FOREGROUND, DEFAULT_BACKGROUND, false, false,
         false
     );

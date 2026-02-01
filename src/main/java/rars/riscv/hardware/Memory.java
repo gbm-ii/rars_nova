@@ -327,6 +327,8 @@ public final class Memory {
             && address < this.currentConfiguration.kernelHighAddress;
     }
 
+    // endregion Address checking utils
+
     public void copyFrom(final @NotNull Memory other) {
         if (this.textBlockTable.length != other.textBlockTable.length
             || this.dataBlockTable.length != other.dataBlockTable.length
@@ -1373,9 +1375,9 @@ public final class Memory {
      */
     private static class MemoryObservable implements Comparable<MemoryObservable> {
         public final @NotNull ListenerDispatcher<@NotNull MemoryAccessNotice> dispatcher;
+        final @NotNull ListenerDispatcher<MemoryAccessNotice>.Handle handle;
         private final int lowAddress;
         private final int highAddress;
-        final @NotNull ListenerDispatcher<MemoryAccessNotice>.Handle handle;
 
         public MemoryObservable(
             final @NotNull Consumer<? super MemoryAccessNotice> listener,

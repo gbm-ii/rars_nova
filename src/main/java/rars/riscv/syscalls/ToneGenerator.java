@@ -263,7 +263,8 @@ final class Tone {
 
 }
 
-class EndOfTrackListener implements javax.sound.midi.MetaEventListener {
+class EndOfTrackListener implements MetaEventListener {
+    private static final int END_OF_TRACK = 47;
 
     private boolean endedYet = false;
 
@@ -271,8 +272,8 @@ class EndOfTrackListener implements javax.sound.midi.MetaEventListener {
      * {@inheritDoc}
      */
     @Override
-    public synchronized void meta(final javax.sound.midi.@NotNull MetaMessage m) {
-        if (m.getType() == 47) {
+    public synchronized void meta(final @NotNull MetaMessage m) {
+        if (m.getType() == END_OF_TRACK) {
             this.endedYet = true;
             this.notifyAll();
         }

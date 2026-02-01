@@ -52,19 +52,27 @@ public class RVTokenBuilder implements TokenBuilder<TokenizedLine> {
 
     @Override
     public void addToken(
-        final char @NotNull [] array, final int start, final int end, final RVTokenType tokenType,
-        final int startOffset
+        final char @NotNull [] tokenizedChars,
+        final int startOffset,
+        final int endOffset,
+        final @NotNull RVTokenType tokenType,
+        final int lineOffset
     ) {
-        final var position = new Position(this.lineNum, start, startOffset);
-        final var substring = new String(array, start, end - start);
+        final var position = new Position(this.lineNum, startOffset, lineOffset);
+        final var substring = new String(tokenizedChars, startOffset, endOffset - startOffset);
         final var newToken = new RVToken(position, tokenType, substring);
         result.add(newToken);
     }
 
     @Override
-    public void addErrorToken(final char[] array, final int segmentPos, final int offset, final String notice) {
-        this.errorList.add(ErrorMessage.error(this.program, this.lineNum, offset, notice));
-        TokenBuilder.super.addErrorToken(array, segmentPos, offset, notice);
+    public void addErrorToken(
+        final char[] tokenizedChars,
+        final int offset,
+        final int lineOffset,
+        final String errorMessage
+    ) {
+        this.errorList.add(ErrorMessage.error(this.program, this.lineNum, lineOffset, errorMessage));
+        TokenBuilder.super.addErrorToken(tokenizedChars, offset, lineOffset, errorMessage);
     }
 
     @Override

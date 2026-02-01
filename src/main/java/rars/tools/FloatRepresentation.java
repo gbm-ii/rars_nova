@@ -13,7 +13,6 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.concurrent.Flow;
 
 /*
 Copyright (c) 2003-2006,  Pete Sanderson and Kenneth Vollmar
@@ -97,7 +96,6 @@ public final class FloatRepresentation extends AbstractTool {
     private BinaryToDecimalFormulaGraphic binaryToDecimalFormulaGraphic;
     // Non-editable field to display instructions
     private InstructionsPane instructions;
-    private Flow.Subscription subscription;
 
     /**
      * Simple constructor, likely used by the RARS Tools menu mechanism
@@ -180,7 +178,7 @@ public final class FloatRepresentation extends AbstractTool {
      *
      * @return a {@link javax.swing.JComponent} object
      */
-    protected JComponent buildDisplayArea() {
+    private JComponent buildDisplayArea() {
         // Panel to hold all floating point dislay and editing components
         final Box mainPanel = Box.createVerticalBox();
         final JPanel leftPanel = new JPanel(new GridLayout(5, 1, 0, 0));

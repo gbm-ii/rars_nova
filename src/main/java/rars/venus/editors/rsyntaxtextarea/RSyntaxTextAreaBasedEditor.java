@@ -15,8 +15,9 @@ import rars.venus.editors.TextEditingArea;
 import rars.venus.editors.TokenStyle;
 
 import javax.swing.*;
-import javax.swing.plaf.InputMapUIResource;
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.font.TextAttribute;
@@ -47,7 +48,6 @@ public final class RSyntaxTextAreaBasedEditor implements TextEditingArea {
         this.textArea = new RSyntaxTextArea() {
             @Override
             protected RTextAreaUI createRTextAreaUI() {
-                // final var ui = super.createRTextAreaUI();
                 return new RSyntaxTextAreaUI(this) {
                     private final InputMap inputMap = new RSyntaxTextAreaDefaultInputMap() {
                         {
@@ -90,7 +90,7 @@ public final class RSyntaxTextAreaBasedEditor implements TextEditingArea {
         autocompletion.setShowDescWindow(true);
         autocompletion.setAutoActivationEnabled(true);
         autocompletion.setAutoCompleteSingleChoices(false);
-        autocompletion.setAutoActivationDelay(300);
+        autocompletion.setAutoActivationDelay(100);
         autocompletion.install(textArea);
 
         // tool tips
