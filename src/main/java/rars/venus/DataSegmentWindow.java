@@ -29,9 +29,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Date;
-import java.util.Objects;
 
-import static java.util.Objects.requireNonNull;
 import static rars.Globals.*;
 import static rars.util.Utils.deriveFontFromStyle;
 
@@ -243,15 +241,6 @@ public final class DataSegmentWindow extends JInternalFrame {
         this.contentPane.add(features, BorderLayout.SOUTH);
     }
 
-    public void processMemoryAccessNotice(final @NotNull MemoryAccessNotice notice) {
-        if (notice.accessType == AccessNotice.AccessType.WRITE) {
-            // Uses the same highlighting technique as for Text Segment -- see
-            // AddressCellRenderer class in DataSegmentWindow.java.
-            final var address = notice.address;
-            this.highlightCellForAddress(address);
-        }
-    }
-
     // Create and fill String array containing labels for base address combo box.
     private static String[] createBaseAddressLabelsArray(final int[] baseAddressArray, final String[] descriptions) {
         final String[] baseAddressChoices = new String[baseAddressArray.length];
@@ -326,6 +315,15 @@ public final class DataSegmentWindow extends JInternalFrame {
     private static String getHeaderStringForColumn(final int i, final int base) {
         return (i == DataSegmentWindow.ADDRESS_COLUMN) ? "Address" :
             "Value (+" + Integer.toString((i - 1) * DataSegmentWindow.BYTES_PER_VALUE, base) + ")";
+    }
+
+    public void processMemoryAccessNotice(final @NotNull MemoryAccessNotice notice) {
+        if (notice.accessType == AccessNotice.AccessType.WRITE) {
+            // Uses the same highlighting technique as for Text Segment -- see
+            // AddressCellRenderer class in DataSegmentWindow.java.
+            final var address = notice.address;
+            this.highlightCellForAddress(address);
+        }
     }
 
     public void updateBaseAddressComboBox() {
@@ -552,6 +550,7 @@ public final class DataSegmentWindow extends JInternalFrame {
             DataSegmentWindow.dataTable.getColumnModel().getColumn(i).setPreferredWidth(60);
             DataSegmentWindow.dataTable.getColumnModel().getColumn(i).setCellRenderer(addressCellRenderer);
         }
+        HIGHLIGHTING_SETTINGS.onChangeListenerHook.subscribe(ignore -> dataTable.repaint());
         this.dataTableScroller = new JScrollPane(
             DataSegmentWindow.dataTable,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
@@ -1119,15 +1118,9 @@ public final class DataSegmentWindow extends JInternalFrame {
                     rowFirstAddress == DataSegmentWindow.this.addressRowFirstAddress &&
                     column == DataSegmentWindow.this.addressColumn) {
                 final var style = HIGHLIGHTING_SETTINGS.getDataSegmentHighlightingStyle();
-                if (style != null) {
-                    cell.setBackground(style.background());
-                    cell.setForeground(style.foreground());
-                    cell.setFont(deriveFontFromStyle(defaultFont, style));
-                } else {
-                    cell.setBackground(theme.backgroundColor);
-                    cell.setForeground(theme.foregroundColor);
-                    cell.setFont(defaultFont);
-                }
+                cell.setBackground(style.background());
+                cell.setForeground(style.foreground());
+                cell.setFont(deriveFontFromStyle(defaultFont, style));
             } else {
                 cell.setBackground(theme.backgroundColor);
                 cell.setForeground(theme.foregroundColor);

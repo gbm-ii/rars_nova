@@ -218,6 +218,9 @@ public final class TextSegmentWindow extends JInternalFrame {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         this.updateRowHeight();
 
+        // updates the existing table view with new highlighting colours
+        HIGHLIGHTING_SETTINGS.onChangeListenerHook.subscribe(ignore -> this.table.repaint());
+
         // prevents cells in row from being highlighted when user clicks on breakpoint
         // checkbox
         this.table.setRowSelectionAllowed(false);

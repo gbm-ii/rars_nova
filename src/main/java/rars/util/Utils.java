@@ -8,9 +8,11 @@ import rars.riscv.hardware.registerFiles.RegisterFile;
 import rars.venus.editors.TokenStyle;
 
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -116,7 +118,13 @@ public final class Utils {
         var fontStyle = 0;
         if (style.isBold()) fontStyle |= Font.BOLD;
         if (style.isItalic()) fontStyle |= Font.ITALIC;
+        // if (style.isUnderline()) fontStyle |= TextAttribute.UNDERLINE
         // noinspection MagicConstant
-        return baseFont.deriveFont(fontStyle);
+        final var result = baseFont.deriveFont(fontStyle);
+        if (style.isUnderline()) {
+            return result.deriveFont(Map.of(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON));
+        } else {
+            return result;
+        }
     }
 }

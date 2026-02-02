@@ -4,19 +4,19 @@ import org.jetbrains.annotations.NotNull;
 import rars.settings.TokenSettingKey;
 import rars.venus.editors.TextEditingArea;
 import rars.venus.editors.TokenStyle;
-import rars.venus.settings.editor.views.SyntaxStyleView;
+import rars.venus.settings.editor.views.SyntaxStylesView;
 
 import javax.swing.event.ChangeListener;
 import java.util.List;
 
 public final class SyntaxStyleSettingsController {
-    private final @NotNull SyntaxStyleView view;
+    private final @NotNull SyntaxStylesView view;
     private final @NotNull EditorSettingsController parentController;
     private final @NotNull TextEditingArea textArea;
     private @NotNull TokenSettingKey currentKey;
 
     public SyntaxStyleSettingsController(
-        final @NotNull SyntaxStyleView view,
+        final @NotNull SyntaxStylesView view,
         final @NotNull EditorSettingsController parentController,
         final @NotNull TextEditingArea textArea
     ) {
@@ -45,14 +45,15 @@ public final class SyntaxStyleSettingsController {
                     .setTokenStyle(key, tokenStyle)
                 );
         };
+        final var syntaxOptions = view.syntaxStyleOptionsView;
         List.of(
-            view.useForeground,
-            view.foregroundColorButton,
-            view.useBackground,
-            view.backgroundColorButton,
-            view.isBold,
-            view.isItalic,
-            view.isUnderline
+            syntaxOptions.useForeground,
+            syntaxOptions.foregroundColorButton,
+            syntaxOptions.useBackground,
+            syntaxOptions.backgroundColorButton,
+            syntaxOptions.isBold,
+            syntaxOptions.isItalic,
+            syntaxOptions.isUnderline
         ).forEach(component -> component.addChangeListener(tokenStyleChangeListener));
 
         // selection listener for the token types list
@@ -67,11 +68,16 @@ public final class SyntaxStyleSettingsController {
     }
 
     private @NotNull TokenStyle getTokenStyleFromView() {
-        final var foreground = this.view.useForeground.isSelected() ? this.view.foregroundColorButton.getColor() : null;
-        final var background = this.view.useBackground.isSelected() ? this.view.backgroundColorButton.getColor() : null;
-        final var isBold = this.view.isBold.isSelected();
-        final var isItalic = this.view.isItalic.isSelected();
-        final var isUnderline = this.view.isUnderline.isSelected();
+        final var syntaxOptions = view.syntaxStyleOptionsView;
+        final var foreground = syntaxOptions.useForeground.isSelected()
+            ? syntaxOptions.foregroundColorButton.getColor()
+            : null;
+        final var background = syntaxOptions.useBackground.isSelected()
+            ? syntaxOptions.backgroundColorButton.getColor()
+            : null;
+        final var isBold = syntaxOptions.isBold.isSelected();
+        final var isItalic = syntaxOptions.isItalic.isSelected();
+        final var isUnderline = syntaxOptions.isUnderline.isSelected();
         return new TokenStyle(foreground, background, isBold, isItalic, isUnderline);
     }
 
@@ -87,24 +93,25 @@ public final class SyntaxStyleSettingsController {
     private void setView(final @NotNull TokenSettingKey key) {
         final var settingsTheme = this.parentController.settingsTheme;
         final var tokenStyle = settingsTheme.tokenStyles.get(key);
+        final var syntaxOptions = view.syntaxStyleOptionsView;
         final var foreground = tokenStyle.foreground();
         if (foreground != null) {
-            this.view.useForeground.setSelected(true);
-            this.view.foregroundColorButton.setColor(foreground);
+            syntaxOptions.useForeground.setSelected(true);
+            syntaxOptions.foregroundColorButton.setColor(foreground);
         } else {
-            this.view.useForeground.setSelected(false);
-            this.view.foregroundColorButton.setColor(settingsTheme.foregroundColor);
+            syntaxOptions.useForeground.setSelected(false);
+            syntaxOptions.foregroundColorButton.setColor(settingsTheme.foregroundColor);
         }
         final var background = tokenStyle.background();
         if (background != null) {
-            this.view.useBackground.setSelected(true);
-            this.view.backgroundColorButton.setColor(background);
+            syntaxOptions.useBackground.setSelected(true);
+            syntaxOptions.backgroundColorButton.setColor(background);
         } else {
-            this.view.useBackground.setSelected(false);
-            this.view.backgroundColorButton.setColor(settingsTheme.backgroundColor);
+            syntaxOptions.useBackground.setSelected(false);
+            syntaxOptions.backgroundColorButton.setColor(settingsTheme.backgroundColor);
         }
-        this.view.isBold.setSelected(tokenStyle.isBold());
-        this.view.isItalic.setSelected(tokenStyle.isItalic());
-        this.view.isUnderline.setSelected(tokenStyle.isUnderline());
+        syntaxOptions.isBold.setSelected(tokenStyle.isBold());
+        syntaxOptions.isItalic.setSelected(tokenStyle.isItalic());
+        syntaxOptions.isUnderline.setSelected(tokenStyle.isUnderline());
     }
 }

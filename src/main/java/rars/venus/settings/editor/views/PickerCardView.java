@@ -6,20 +6,19 @@ import javax.swing.*;
 import java.awt.*;
 
 public final class PickerCardView extends JPanel {
-    public final @NotNull BaseStyleView baseStyleView;
-    public final @NotNull PresetsView presetsView;
-    public final @NotNull SyntaxStyleView syntaxStyleView;
-    public final @NotNull FontSettingsView fontSettingsView;
-    public final @NotNull OtherSettingsView otherSettingsView;
-    private final @NotNull JPanel upperPanel;
-    private final @NotNull CardLayout upperLayout;
-
     private static final @NotNull String EMPTY = "empty",
         FONT = "font",
         PRESETS = "presets",
         BASE = "base",
         SYNTAX = "syntax",
         OTHER = "other";
+    public final @NotNull BaseStyleView baseStyleView;
+    public final @NotNull PresetsView presetsView;
+    public final @NotNull SyntaxStylesView syntaxStyleView;
+    public final @NotNull FontSettingsView fontSettingsView;
+    public final @NotNull OtherSettingsView otherSettingsView;
+    private final @NotNull JPanel upperPanel;
+    private final @NotNull CardLayout upperLayout;
 
     public PickerCardView() {
         super();
@@ -34,7 +33,7 @@ public final class PickerCardView extends JPanel {
         final var emptyPanel = new JPanel();
         baseStyleView = new BaseStyleView();
         presetsView = new PresetsView();
-        syntaxStyleView = new SyntaxStyleView();
+        syntaxStyleView = new SyntaxStylesView();
         fontSettingsView = new FontSettingsView();
         otherSettingsView = new OtherSettingsView();
 

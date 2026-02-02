@@ -17,10 +17,7 @@ import rars.venus.registers.FloatingPointWindow;
 import rars.venus.registers.RegistersPane;
 import rars.venus.registers.RegistersWindow;
 import rars.venus.run.*;
-import rars.venus.settings.SettingsAction;
-import rars.venus.settings.SettingsEditorAction;
-import rars.venus.settings.SettingsExceptionHandlerAction;
-import rars.venus.settings.SettingsMemoryConfigurationAction;
+import rars.venus.settings.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -107,7 +104,7 @@ public final class VenusUI extends JFrame {
         settingsAddressDisplayBaseAction,
         settingsExtendedAction, settingsAssembleOnOpenAction, settingsAssembleOpenAction, settingsAssembleAllAction,
         settingsWarningsAreErrorsAction, settingsStartAtMainAction, settingsProgramArgumentsAction,
-        settingsExceptionHandlerAction, settingsEditorAction, settingsMemoryConfigurationAction,
+        settingsExceptionHandlerAction, settingsEditorAction, settingsHighlightingAction, settingsMemoryConfigurationAction,
         settingsSelfModifyingCodeAction, settingsRV64Action, settingsDeriveCurrentWorkingDirectoryAction;
     private final @NotNull Action helpHelpAction, helpAboutAction;
     /// registers/memory reset for execution
@@ -124,7 +121,11 @@ public final class VenusUI extends JFrame {
      */
     public VenusUI(final @NotNull String name, final @NotNull List<@NotNull File> files) {
         super(name);
-        setDarkModeState(BOOL_SETTINGS.getSetting(BoolSetting.DARK_MODE));
+        final var boolSettings = Globals.BOOL_SETTINGS;
+        final var editorSettings = Globals.EDITOR_THEME_SETTINGS;
+        final var highlightingSettings = Globals.HIGHLIGHTING_SETTINGS;
+        final var fontSettings = Globals.FONT_SETTINGS;
+        setDarkModeState(boolSettings.getSetting(BoolSetting.DARK_MODE));
         this.editor = new Editor(this);
 
         final double screenWidth = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
@@ -510,6 +511,12 @@ public final class VenusUI extends JFrame {
             "Editor...", null,
             "View and modify text editor settings.", null, null, this
         );
+        this.settingsHighlightingAction = new SettingsHighlightingAction(
+            this,
+            highlightingSettings,
+            fontSettings,
+            editorSettings
+        );
         this.settingsExceptionHandlerAction = new SettingsExceptionHandlerAction(
             "Exception Handler...", null,
             "If set, the specified exception handler file will be included in all Assemble operations.",
@@ -764,6 +771,7 @@ public final class VenusUI extends JFrame {
             checkBoxItem(this.settingsRV64Action, BoolSetting.RV64_ENABLED),
             new JPopupMenu.Separator(),
             new JMenuItem(this.settingsEditorAction),
+            new JMenuItem(this.settingsHighlightingAction),
             new JMenuItem(this.settingsExceptionHandlerAction),
             new JMenuItem(this.settingsMemoryConfigurationAction)
         ).forEach(settingsMenu::add);

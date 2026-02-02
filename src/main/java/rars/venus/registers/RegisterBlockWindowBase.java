@@ -22,9 +22,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
 
-import static java.util.Objects.requireNonNull;
 import static rars.Globals.*;
 
 /*
@@ -67,11 +65,11 @@ public abstract class RegisterBlockWindowBase extends JPanel {
     private static final int NUMBER_SIZE = 45;
     private static final int NAME_SIZE = 80;
     private static final int VALUE_SIZE = 160;
-    private @Nullable ListenerDispatcher<@NotNull RegisterAccessNotice>.Handle listenerHandle;
     private final @NotNull JTable table;
     private final @NotNull RegisterFileBase registerFile;
     @NotNull
     private final VenusUI mainUI;
+    private @Nullable ListenerDispatcher<@NotNull RegisterAccessNotice>.Handle listenerHandle;
     private int highlightRow;
     private boolean doHighlighting;
 
@@ -137,6 +135,8 @@ public abstract class RegisterBlockWindowBase extends JPanel {
         valueColumn.setMaxWidth(RegisterBlockWindowBase.VALUE_SIZE);
         valueColumn.setCellRenderer(new RegisterCellRenderer(SwingConstants.RIGHT, table));
 
+        HIGHLIGHTING_SETTINGS.onChangeListenerHook.subscribe(ignored -> this.table.repaint());
+
         this.table.setPreferredScrollableViewportSize(new Dimension(
             RegisterBlockWindowBase.NAME_SIZE + RegisterBlockWindowBase.NUMBER_SIZE + RegisterBlockWindowBase.VALUE_SIZE,
             700
@@ -161,7 +161,7 @@ public abstract class RegisterBlockWindowBase extends JPanel {
             this.listenerHandle = null;
         }
     }
-    
+
     public void processRegisterNotice(final @NotNull RegisterAccessNotice notice) {
         if (notice.accessType == AccessNotice.AccessType.WRITE) {
             // Uses the same highlighting technique as for Text Segment -- see

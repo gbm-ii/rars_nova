@@ -11,6 +11,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import static rars.Globals.*;
+import static rars.venus.settings.editor.EditorSettingsTreeKeys.*;
+import static rars.venus.settings.editor.TreeNodeBuilder.node;
 
 public final class EditorSettingsDialog extends JDialog {
     public EditorSettingsDialog(
@@ -21,7 +23,7 @@ public final class EditorSettingsDialog extends JDialog {
         super(owner, title, modality);
         final var pickerCardView = new PickerCardView();
         final var panelWithTextAreaView = new PanelWithTextAreaView(pickerCardView);
-        final var treePanel = new TreePanel();
+        final var treePanel = createTreePanel();
         final var mainPanel = new EditorSettingsPanel(treePanel, panelWithTextAreaView);
         new EditorSettingsController(
             mainPanel,
@@ -43,5 +45,22 @@ public final class EditorSettingsDialog extends JDialog {
                 }
             });
         this.setLocationRelativeTo(owner);
+    }
+
+    private static @NotNull TreePanel createTreePanel() {
+        final var root = TreeNodeBuilder.root(
+            node(FONT_SETTINGS_KEY),
+            node("Color scheme").children(
+                node(PRESETS_KEY),
+                node(GENERAL_SCHEME_SETTINGS_KEY),
+                node(SYNTAX_SETTINGS_KEY)
+            ),
+            node(OTHER_SETTINGS_KEY)
+        ).collect();
+
+        final var treePanel = new TreePanel(root);
+        // Keep the navigation panel compact vertically
+        treePanel.setPreferredSize(new Dimension(200, 300));
+        return treePanel;
     }
 }

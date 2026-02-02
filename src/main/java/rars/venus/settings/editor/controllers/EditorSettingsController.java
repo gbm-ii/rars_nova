@@ -7,10 +7,12 @@ import rars.settings.OtherSettings;
 import rars.settings.SettingsTheme;
 import rars.venus.settings.editor.EditorSettingsDialog;
 import rars.venus.settings.editor.EditorSettingsPanel;
-import rars.venus.settings.editor.TreeNode;
+import rars.venus.settings.editor.TreeNodeKey;
 import rars.venus.settings.editor.TreePanel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+
+import static rars.venus.settings.editor.EditorSettingsTreeKeys.*;
 
 public final class EditorSettingsController {
     private final @NotNull FontSettingsController fontSettingsController;
@@ -76,24 +78,23 @@ public final class EditorSettingsController {
                 if (selectedNode == null) {
                     return;
                 }
-                switch ((TreeNode) (selectedNode.getUserObject())) {
-                    case null -> { /* ignore */ }
-                    case final TreeNode.Normal node -> {
-                        if (node == treePanel.fontSettingsNode) {
+                switch (selectedNode.getUserObject()) {
+                    case final TreeNodeKey node -> {
+                        if (node == FONT_SETTINGS_KEY) {
                             pickerCardView.showFontView();
-                        } else if (node == treePanel.generalSchemeSettingsNode) {
+                        } else if (node == GENERAL_SCHEME_SETTINGS_KEY) {
                             pickerCardView.showBaseStyleView();
-                        } else if (node == treePanel.syntaxSettingsNode) {
+                        } else if (node == SYNTAX_SETTINGS_KEY) {
                             pickerCardView.showSyntaxStyleView();
-                        } else if (node == treePanel.otherSettingsNode) {
+                        } else if (node == OTHER_SETTINGS_KEY) {
                             pickerCardView.showOtherSettings();
-                        } else if (node == treePanel.presetsNode) {
+                        } else if (node == PRESETS_KEY) {
                             pickerCardView.showPresets();
                         } else {
                             pickerCardView.showEmpty();
                         }
                     }
-                    case final TreeNode.Syntax node -> { /* deprecated: no per-token nodes in tree */ }
+                    case null, default -> { /* ignore */ }
                 }
             }
         );
