@@ -221,14 +221,14 @@ public final class RunGoAction extends GuiAction {
                 this.mainUI.messagesPane.postMessage(
                     "\n" + this.name + ": execution completed successfully.\n\n");
                 this.mainUI.messagesPane.postRunMessage(
-                    "\n-- program is finished running (" + Globals.exitCode + ") --\n\n");
+                    "\n-- program terminated by exit(" + Globals.exitCode + ") --\n\n");
                 this.mainUI.messagesPane.selectRunMessageTab();
                 break;
             case CLIFF_TERMINATION:
                 this.mainUI.messagesPane.postMessage(
-                    "\n" + this.name + ": execution terminated by null instruction.\n\n");
+                    "\n" + this.name + ": execution aborted due to null instruction.\n\n");
                 this.mainUI.messagesPane.postRunMessage(
-                    "\n-- program is finished running (dropped off bottom) --\n\n");
+                    "\n-- program dropped off bottom (no exit call) --\n\n");
                 this.mainUI.messagesPane.selectRunMessageTab();
                 break;
             case EXCEPTION:

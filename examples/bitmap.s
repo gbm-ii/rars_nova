@@ -3,10 +3,10 @@
 .eqv SYSCALL_RAND_INT			41
 .eqv SYSCALL_EXIT				93
 
-.eqv WIDTH  100
-.eqv HEIGHT 100
-.eqv PIXELS 10000
-.eqv BYTES  40000
+.eqv WIDTH  640
+.eqv HEIGHT 480
+#.eqv PIXELS 10000
+.eqv BYTES  307200
 
 .data
     .align 4
@@ -29,8 +29,7 @@ buffer:
 # t2 - current height
 main:
 	li s0, WIDTH
-	li s1, HEIGHT
-
+	li s1, 200 #HEIGHT
 
 	la t0, buffer
 
@@ -39,33 +38,25 @@ rand_seed:
 	csrr a1, time
 	syscall (SYSCALL_RAND_SEED)
 
-height_loop_init:
 	mv t2, zero
 
 height_loop_body:
-width_loop_init:
     mv t1, zero
 
 width_loop_body:
 
 randomize_value:
-
 	li a0, 0
 	syscall (SYSCALL_RAND_INT)
 
 write_pixel:
-
 	sw a0, 0(t0)
-
-shift_image_pointer:
 	addi t0, t0, 4
 
-width_loop_end:
 	addi t1, t1, 1
 	bne t1, s0, width_loop_body
 	
 display_frame:
-
 	la a0, buffer
 	li a1, WIDTH
 	li a2, HEIGHT
@@ -76,6 +67,7 @@ height_loop_end:
 	bne t2, s1, height_loop_body
 
 fin:
-	mv zero, a0
+	mv a0, zero
 	li a7, SYSCALL_EXIT
+	#li	a7, 10
 	ecall

@@ -36,7 +36,7 @@ dependencies {
 }
 
 group = "io.github.chr1sps"
-version = "0.1.0"
+version = "26.10.0"
 description = "RARS Nova"
 
 tasks {

@@ -98,7 +98,7 @@ public final class BitmapDisplay extends JFrame {
                 final int address = this.baseAddress + currentOffset;
                 try {
                     final var word = this.memory.getWordNoNotify(address);
-                    this.panel.paintPixel(row, col, word);
+                    this.panel.paintPixel(this.displayHeight - 1 - row, col, word);
                 } catch (final AddressErrorException e) {
                     LOGGER.error("Error updating color for address {} in bitmap display: {}", address, e);
                     return;
@@ -125,7 +125,7 @@ public final class BitmapDisplay extends JFrame {
             for (int i = start; i < end; i += 4) {
                 try {
                     final var word = this.memory.getWordNoNotify(i);
-                    this.panel.paintPixel(row, col, word);
+                    this.panel.paintPixel(this.displayHeight - 1 - row, col, word);
                 } catch (final AddressErrorException e) {
                     throw new RuntimeException(e);
                 }

@@ -178,7 +178,7 @@ public final class HelpHelpAction extends GuiAction {
             i++;
         }
 
-        final String[] columnNames = {"Name", "Number", "Description", "Inputs", "Ouputs"};
+        final String[] columnNames = {"Name", "Number", "Description", "Inputs", "Outputs"};
         final JEditorPane html = new JEditorPane(
             "text/html",
             HelpHelpAction.loadFiletoStringBuilder(Globals.helpPath + "SyscallHelpPrelude.html") +
