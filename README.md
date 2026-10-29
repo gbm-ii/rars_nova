@@ -5,6 +5,7 @@ project.
 
 Main goals of this fork are:
 
+- new graphics display, see graphics.md
 - modernization of the codebase
 - introduction of external dependencies to simplify the codebase
 - improving the user experience in various areas (i.e. the code editor).

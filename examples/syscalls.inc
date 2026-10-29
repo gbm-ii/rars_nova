@@ -1,0 +1,43 @@
+# Syscall numbers
+
+# General system
+.eqv	SYS_SBRK	9
+.eqv	SYS_EXIT0	10
+.eqv	SYS_EXIT	93
+
+# Console IO utilities
+.eqv	SYS_PRINT_INT		1
+.eqv	SYS_PRINT_FLOAT		2
+.eqv	SYS_PRINT_DOUBLE	3
+.eqv	SYS_PRINT_STRING	4
+.eqv	SYS_PRINT_CHAR		11
+.eqv	SYS_PRINT_HEX	34
+.eqv	SYS_PRINT_BIN	35
+.eqv	SYS_PRINT_UINT	36
+
+.eqv	SYS_READ_INT	5
+.eqv	SYS_READ_FLOAT	6
+.eqv	SYS_READ_DOUBLE	7
+.eqv	SYS_READ_STRING	8
+.eqv	SYS_READ_CHAR	12
+
+# File
+.eqv	SYS_OPEN	1024
+.eqv	SYS_CLOSE	57
+.eqv	SYS_LSEEK	62
+.eqv	SYS_READ	63
+.eqv	SYS_WRITE	64
+.eqv	SYS_GETCWD	17
+
+# Others
+.eqv	SYS_TIME	30
+.eqv	SYS_SLEEP	32
+
+.eqv	SYS_RAND_SEED		40
+.eqv	SYS_RAND_INT		41
+.eqv	SYS_RAND_INT_RANGE	42
+.eqv	SYS_RAND_FLOAT		43
+.eqv	SYS_RAND_DOUBLE		44
+
+.eqv	SYS_BITMAP_DISPLAY	61
+

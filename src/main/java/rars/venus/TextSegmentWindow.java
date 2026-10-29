@@ -238,7 +238,9 @@ public final class TextSegmentWindow extends JInternalFrame {
         final CodeCellRenderer codeStepHighlighter = new CodeCellRenderer();
 
         final var sourceColumn = columnModel.getColumn(ColumnData.SOURCE_COLUMN.number);
+        sourceColumn.setMinWidth(120);	// gbm 10'26
         sourceColumn.setPreferredWidth(320);
+        sourceColumn.setMaxWidth(640);	// gbm 10'26
         sourceColumn.setCellRenderer(codeStepHighlighter);
 
         final var basicInstructionsColumn = columnModel.getColumn(ColumnData.BASIC_INSTRUCTIONS_COLUMN.number);

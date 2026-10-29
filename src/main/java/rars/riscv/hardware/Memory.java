@@ -62,7 +62,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 public final class Memory {
     private static final @NotNull Logger LOGGER = LogManager.getLogger(Memory.class);
     private static final int BLOCK_LENGTH_WORDS = 1024; // allocated blocksize 1024 ints == 4K bytes
-    private static final int BLOCK_TABLE_LENGTH = 1024; // Each entry of table points to a block.
+    private static final int BLOCK_TABLE_LENGTH = 4096; // Each entry of table points to a block.	gbm 10'26
     private static final int MMIO_TABLE_LENGTH = 16; // Each entry of table points to a 4K block.
     private static final int TEXT_BLOCK_LENGTH_WORDS = 1024; // allocated blocksize 1024 ints == 4K bytes
     private static final int TEXT_BLOCK_TABLE_LENGTH = 1024; // Each entry of table points to a block.

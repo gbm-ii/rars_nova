@@ -64,7 +64,7 @@ public final class Globals {
     /// Path to folder that contains help text
     public static final @NotNull String helpPath = "/help/";
     /// The current version number.
-    public static final @NotNull String version = "1.6";
+    public static final @NotNull String version = "26.10.0";
     /// Copyright years
     public static final @NotNull String copyrightYears = "2003-2019";
     /// Copyright holders

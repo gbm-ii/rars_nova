@@ -72,6 +72,7 @@ public final class Main {
     private final @NotNull PrintStream out; // stream for display of command line output
 
     private Main(final @NotNull ProgramOptions programOptions) {
+		//System.setProperty("sun.java2d.uiScale", "1");
         this.programOptions = programOptions;
         this.out = programOptions.printToStdErr ? System.err : System.out;
 
@@ -142,7 +143,7 @@ public final class Main {
             System.setProperty("apple.awt.application.name", "RARS Nova");
             System.setProperty("apple.awt.application.appearance", "system");
         }
-        SwingUtilities.invokeLater(() -> Globals.GUI = new VenusUI("RARS " + Globals.version, options.files));
+        SwingUtilities.invokeLater(() -> Globals.GUI = new VenusUI("RARS Nova " + Globals.version, options.files));
     }
 
     // /**

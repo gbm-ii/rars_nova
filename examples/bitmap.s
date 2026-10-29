@@ -1,73 +1,77 @@
-.eqv SYSCALL_BITMAP_DISPLAY		61
-.eqv SYSCALL_RAND_SEED			40
-.eqv SYSCALL_RAND_INT			41
-.eqv SYSCALL_EXIT				93
+# RARS Nova graphics display demo
+# gbm 10'2026
 
-.eqv WIDTH  640
-.eqv HEIGHT 480
-#.eqv PIXELS 10000
-.eqv BYTES  307200
+	.include	"syscalls.inc"
 
-.data
-    .align 4
-buffer:
-    .space BYTES   # space for WIDTH*HEIGHT pixels (4 bytes per pixel)
+# graphics window dimensions
+	.eqv WIDTH  960
+	.eqv HEIGHT 540
 
-.text
-.globl main
+	.data
 
-.macro syscall (%number)
+	.text
+	.globl main
+
+	.macro syscall %number
 	li a7, %number
 	ecall
-.end_macro
+	.end_macro
 
-# legend:
+# register usage:
 # s0 - width constant
 # s1 - height constant
-# t0 - image buffer pointer
-# t1 - current width
-# t2 - current height
+# s2 - image buffer base
+
 main:
 	li s0, WIDTH
-	li s1, 200 #HEIGHT
-
-	la t0, buffer
+	li s1, HEIGHT
+	# determine required memory size
+	mul	s4, s0, s1	# no. of pixels
+	slli	a0, s4, 2	# no. of bytes for sbrk
+	# allocate screen memory
+	syscall	SYS_SBRK
+	
+	mv	s2, a0	# store image base
 
 rand_seed:
 	li a0, 0
 	csrr a1, time
-	syscall (SYSCALL_RAND_SEED)
+	syscall SYS_RAND_SEED
 
-	mv t2, zero
-
-height_loop_body:
-    mv t1, zero
-
-width_loop_body:
-
-randomize_value:
-	li a0, 0
-	syscall (SYSCALL_RAND_INT)
-
-write_pixel:
-	sw a0, 0(t0)
-	addi t0, t0, 4
-
-	addi t1, t1, 1
-	bne t1, s0, width_loop_body
-	
-display_frame:
-	la a0, buffer
+	# create graphics window
+	mv a0, s2
 	li a1, WIDTH
 	li a2, HEIGHT
-	syscall (SYSCALL_BITMAP_DISPLAY)
+	syscall SYS_BITMAP_DISPLAY
 
-height_loop_end:
+	# fill screen with random noise
+	mv	t0, s2	# t0 - image buffer pointer
+	mv t2, zero	# t2 - current y
+	
+row_loop:
+	mv t1, zero	# t1 - current x
+
+column_loop:
+	li a0, 0
+	syscall SYS_RAND_INT
+
+	sw a0, (t0)	# write pixel
+	addi t0, t0, 4	# move pointer
+
+	addi t1, t1, 1
+	bne t1, s0, column_loop
+	
 	addi t2, t2, 1
-	bne t2, s1, height_loop_body
+	bne t2, s1, row_loop
 
+	# clear the screen
+	mv	t0, s2
+	mv	t1, s4
+clear:
+	sw	zero, (t0)	# write pixel
+	addi	t0, t0, 4
+	addi	t1, t1, -1
+	bnez	t1, clear
+	
 fin:
-	mv a0, zero
-	li a7, SYSCALL_EXIT
-	#li	a7, 10
-	ecall
+	syscall	SYS_EXIT0
